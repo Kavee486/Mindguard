@@ -1,0 +1,10 @@
+fastapi==0.112.0
+uvicorn[standard]==0.30.5
+pydantic==2.8.2
+scikit-learn==1.5.1
+joblib==1.4.2
+numpy==1.26.4
+transformers==4.44.0
+requests==2.32.3
+# Install torch matching your platform/CUDA version, e.g.:
+#   pip install torch --index-url https://download.pytorch.org/whl/cu121
