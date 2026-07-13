@@ -64,9 +64,14 @@ def load_classification_data() -> pd.DataFrame:
         return mapping.get(s, s)
 
     df["label_name"] = df["subreddit"].apply(normalise_label)
-    df = df[df["label_name"].isin(LABEL2ID.keys())].copy()
-
     print(f"Raw rows: {len(df)}")
+
+    known_mask = df["label_name"].isin(LABEL2ID.keys())
+    dropped = df.loc[~known_mask, "subreddit"].value_counts()
+    if len(dropped):
+        print(f"Dropping {len(df) - known_mask.sum()} rows with unrecognized subreddit labels:")
+        print(dropped.head(20).to_string())
+    df = df[known_mask].copy()
 
     # Body-only filter: keep posts with substantive body text (mirrors the
     # report's finding that ~42% of posts had empty/deleted bodies).

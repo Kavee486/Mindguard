@@ -29,6 +29,7 @@ from sklearn.metrics import accuracy_score, f1_score
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from config import DATA_PROCESSED_DIR, MODELS_DIR, MAX_SEQ_LEN, RANDOM_SEED
+from utils import find_latest_checkpoint
 
 
 @torch.no_grad()
@@ -46,15 +47,19 @@ def extract_cls_embeddings(texts, tokenizer, model, device, batch_size=32):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model_dir", required=True, help="Path to a fine-tuned model, e.g. models/bert-base-uncased/final")
+    parser.add_argument("--model_dir", default=None, help="Path to a fine-tuned model, e.g. models/bert-base-uncased/final. If omitted, auto-selects the most recently trained checkpoint.")
     parser.add_argument("--sample_sizes", nargs="+", type=int, default=[5, 10, 20, 50, 100, 200])
     args = parser.parse_args()
+
+    model_dir = args.model_dir or find_latest_checkpoint(MODELS_DIR)
+    if not args.model_dir:
+        print(f"--model_dir not given, auto-selected: {model_dir}")
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"Using device: {device}")
 
-    tokenizer = AutoTokenizer.from_pretrained(args.model_dir)
-    model = AutoModel.from_pretrained(args.model_dir).to(device)
+    tokenizer = AutoTokenizer.from_pretrained(model_dir)
+    model = AutoModel.from_pretrained(model_dir).to(device)
 
     train_df = pd.read_csv(os.path.join(DATA_PROCESSED_DIR, "train.csv")).fillna({"text": ""})
     test_df = pd.read_csv(os.path.join(DATA_PROCESSED_DIR, "test.csv")).fillna({"text": ""})

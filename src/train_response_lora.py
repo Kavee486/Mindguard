@@ -65,6 +65,14 @@ def main():
     parser.add_argument("--lr", type=float, default=2e-4)
     args = parser.parse_args()
 
+    if not torch.cuda.is_available():
+        raise SystemExit(
+            "No CUDA GPU detected. 4-bit QLoRA fine-tuning requires a GPU - running this "
+            "on CPU would silently attempt full-precision training of a multi-billion "
+            "parameter model and hang or OOM. Use Google Colab / Kaggle instead (see the "
+            "module docstring at the top of this file)."
+        )
+
     torch.manual_seed(RANDOM_SEED)
 
     df = pd.read_csv(os.path.join(DATA_PROCESSED_DIR, "counseling.csv")).fillna("")
@@ -84,11 +92,10 @@ def main():
 
     model = AutoModelForCausalLM.from_pretrained(
         args.base_model,
-        quantization_config=bnb_config if torch.cuda.is_available() else None,
-        device_map="auto" if torch.cuda.is_available() else None,
+        quantization_config=bnb_config,
+        device_map="auto",
     )
-    if torch.cuda.is_available():
-        model = prepare_model_for_kbit_training(model)
+    model = prepare_model_for_kbit_training(model)
 
     lora_config = LoraConfig(
         r=args.lora_r,

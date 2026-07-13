@@ -29,10 +29,15 @@ import llm
 
 app = FastAPI(title="MindGuard API", version="0.1.0")
 
+# Comma-separated list of allowed frontend origins, e.g.
+# CORS_ALLOWED_ORIGINS="http://localhost:3000,https://mindguard.example.com"
+# Defaults to the local Next.js dev server so `docker-compose up` keeps working out of the box.
+_cors_origins = os.environ.get("CORS_ALLOWED_ORIGINS", "http://localhost:3000").split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # tighten this before any real deployment
-    allow_methods=["*"],
+    allow_origins=[o.strip() for o in _cors_origins if o.strip()],
+    allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
 
@@ -122,6 +127,9 @@ def compare(req: AnalyzeRequest):
 
 @app.post("/interpret", response_model=InterpretResponse)
 def interpret(req: AnalyzeRequest):
+    if not req.text or not req.text.strip():
+        raise HTTPException(status_code=400, detail="`text` must not be empty")
+
     if "bert" not in model_loader.available_models():
         raise HTTPException(
             status_code=503,

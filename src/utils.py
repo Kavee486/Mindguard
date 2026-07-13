@@ -1,6 +1,7 @@
 """
 Shared text-cleaning and small helper functions used by every stage.
 """
+import os
 import re
 import unicodedata
 
@@ -41,3 +42,27 @@ def is_substantive(text: str, min_words: int = 3) -> bool:
     if not text:
         return False
     return len(text.split()) >= min_words
+
+
+def find_latest_checkpoint(models_dir: str, candidates=("bert-base-uncased", "roberta-base")) -> str:
+    """Find the most recently modified trained-model checkpoint under models_dir.
+
+    Looks for `<models_dir>/<candidate>/final` directories (the layout used
+    by train_transformer.py) and returns the most recently modified one.
+    Raises FileNotFoundError with a helpful message if none exist yet.
+    """
+    found = []
+    for name in candidates:
+        checkpoint_dir = os.path.join(models_dir, name, "final")
+        if os.path.isdir(checkpoint_dir):
+            found.append(checkpoint_dir)
+
+    if not found:
+        searched = ", ".join(os.path.join(models_dir, name, "final") for name in candidates)
+        raise FileNotFoundError(
+            "No trained checkpoint found to auto-select. Searched: "
+            f"{searched}. Run src/train_transformer.py first, or pass --model_dir explicitly."
+        )
+
+    found.sort(key=os.path.getmtime, reverse=True)
+    return found[0]
