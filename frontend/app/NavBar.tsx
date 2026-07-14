@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import Avatar from "./Avatar";
 
 const links = [
   { href: "/", label: "Analyze" },
@@ -13,7 +14,10 @@ export default function NavBar() {
   const pathname = usePathname();
   return (
     <nav className="nav">
-      <span className="brand">MindGuard</span>
+      <span className="brand">
+        <Avatar size={30} />
+        MindGuard
+      </span>
       {links.map((l) => (
         <Link key={l.href} href={l.href} className={pathname === l.href ? "active" : ""}>
           {l.label}

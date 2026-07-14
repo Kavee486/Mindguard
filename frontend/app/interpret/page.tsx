@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { interpret, InterpretResponse } from "../api";
+import Avatar from "../Avatar";
 
 function weightToColor(w: number, max: number) {
   const intensity = max > 0 ? Math.min(w / max, 1) : 0;
   const alpha = 0.15 + intensity * 0.7;
-  return `rgba(108, 139, 255, ${alpha})`;
+  return `rgba(31, 158, 92, ${alpha})`;
 }
 
 export default function InterpretPage() {
@@ -34,10 +35,17 @@ export default function InterpretPage() {
 
   return (
     <div>
-      <h1>Interpretability</h1>
-      <p className="subtitle">
-        Shows which tokens BERT&apos;s [CLS] representation attends to most (last layer, averaged over heads).
-      </p>
+      <div className="hero">
+        <div className="avatar-glow">
+          <Avatar size={52} />
+        </div>
+        <div>
+          <h1>Interpretability</h1>
+          <p className="subtitle">
+            Shows which tokens BERT&apos;s [CLS] representation attends to most (last layer, averaged over heads).
+          </p>
+        </div>
+      </div>
 
       <textarea
         value={text}
@@ -52,6 +60,9 @@ export default function InterpretPage() {
 
       {result && (
         <div className="card">
+          <div style={{ color: "var(--muted)", fontSize: 12.5, marginBottom: 12 }}>
+            Darker highlight = stronger attention
+          </div>
           <div style={{ lineHeight: 2.2, fontSize: 15 }}>
             {result.tokens.map((tok, i) => (
               <span

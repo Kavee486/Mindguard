@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { compare, CompareResponse } from "../api";
+import Avatar from "../Avatar";
 
 export default function ComparePage() {
   const [text, setText] = useState("");
@@ -26,8 +27,15 @@ export default function ComparePage() {
 
   return (
     <div>
-      <h1>Model Comparison</h1>
-      <p className="subtitle">See predictions from every trained model side by side.</p>
+      <div className="hero">
+        <div className="avatar-glow">
+          <Avatar size={52} />
+        </div>
+        <div>
+          <h1>Model Comparison</h1>
+          <p className="subtitle">See predictions from every trained model side by side.</p>
+        </div>
+      </div>
 
       <textarea
         value={text}
@@ -53,7 +61,9 @@ export default function ComparePage() {
             <tbody>
               {Object.entries(result.predictions).map(([model, pred]) => (
                 <tr key={model}>
-                  <td>{model}</td>
+                  <td>
+                    <span className="pill">{model}</span>
+                  </td>
                   <td>{pred.label}</td>
                   <td>{(pred.confidence * 100).toFixed(1)}%</td>
                 </tr>
